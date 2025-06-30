@@ -1,0 +1,92 @@
+[
+    {
+        "id": "70f3fe11-3e3a-4663-9e40-fa04b21b9e14",
+        "date": "2025-03-01T00:00:00",
+        "year": "2025",
+        "month": 3,
+        "amount": "11",
+        "type": "PayPal",
+        "description": "Deposit on Cusco day trip tour"
+    },
+    {
+        "id": "3828fe89-5aac-4493-af65-5af80486322d",
+        "date": "2025-01-01T00:00:00",
+        "year": "2025",
+        "month": 1,
+        "amount": "120",
+        "type": "Venmo",
+        "description": "Keara's phone bill"
+    },
+    {
+        "id": "58a2d47b-d31f-4232-af7d-4355a1360f28",
+        "date": "2025-01-01T00:00:00",
+        "year": "2025",
+        "month": 1,
+        "amount": "138.69",
+        "type": "Venmo",
+        "description": "Deposit for Kimmy's bachelorette party"
+    },
+    {
+        "id": "dc47a15f-49d3-4818-8174-b03ec592531d",
+        "date": "2025-01-01T00:00:00",
+        "year": "2025",
+        "month": 1,
+        "amount": "100",
+        "type": "Venmo",
+        "description": "Deposit for Shane's golf trip"
+    },
+    {
+        "id": "d77f0ef4-8849-43db-b991-12ee1586377d",
+        "date": "2025-02-01T00:00:00",
+        "year": "2025",
+        "month": 2,
+        "amount": "460",
+        "type": "Venmo",
+        "description": "Remainder of Shane's golf trip"
+    },
+    {
+        "id": "71480d86-1b9b-4d68-9e32-71017401d4cf",
+        "date": "2025-03-01T00:00:00",
+        "year": "2025",
+        "month": 3,
+        "amount": "110",
+        "type": "Venmo",
+        "description": "Hotel & ticket for nurse John"
+    },
+    {
+        "id": "64df5e0f-d01b-4ad2-98c1-c6cc920ab395",
+        "date": "2025-03-01T00:00:00",
+        "year": "2025",
+        "month": 3,
+        "amount": "320",
+        "type": "Venmo",
+        "description": "Deposit for cruise"
+    },
+    {
+        "id": "e8a4440a-6126-44a5-8cdc-8cfd1db7f566",
+        "date": "2025-03-01T00:00:00",
+        "year": "2025",
+        "month": 3,
+        "amount": "1286.00",
+        "type": "Other",
+        "description": "Federal taxes"
+    },
+    {
+        "id": "06250a1a-619d-4211-839d-f688c18027a1",
+        "date": "2025-03-01T00:00:00",
+        "year": "2025",
+        "month": 3,
+        "amount": "51",
+        "type": "Other",
+        "description": "State taxes"
+    },
+    {
+        "id": "30791bfd-38a7-4ccc-ad44-725c00afcae2",
+        "date": "2025-03-01T00:00:00",
+        "year": "2025",
+        "month": 3,
+        "amount": "40",
+        "type": "Cash",
+        "description": "Travel golf bag"
+    }
+]

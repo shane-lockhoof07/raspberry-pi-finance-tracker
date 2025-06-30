@@ -1,0 +1,30 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: finances-ingress
+  namespace: ingress
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: web,websecure
+    traefik.ingress.kubernetes.io/router.tls: "true"
+spec:
+  ingressClassName: traefik
+  rules:
+  - host: pi.elk-magellanic.ts.net
+    http:
+      paths:
+      - path: /finances
+        pathType: Prefix
+        backend:
+          service:
+            name: finances-ui
+            port:
+              number: 80
+      - path: /api
+        pathType: Prefix
+        backend:
+          service:
+            name: finances-api
+            port:
+              number: 8000
+
+

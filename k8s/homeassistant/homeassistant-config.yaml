@@ -1,0 +1,37 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+    name: homeassistant-config
+    namespace: homeassistant
+data:
+    configuration.yaml: |
+        # Home Assistant Configuration
+        homeassistant:
+            name: Home
+            latitude: !secret latitude
+            longitude: !secret longitude
+            elevation: !secret elevation
+            unit_system: imperial
+            time_zone: America/Denver
+
+        # Roku Integration
+        roku:
+            - host: 192.168.0.132
+
+        # Additional network configuration
+        network:
+            interfaces:
+                - wlan0
+
+        # Enable discovery
+        discovery:
+
+        # Basic HTTP configuration
+        http:
+            use_x_forwarded_for: true
+            trusted_proxies:
+                - 127.0.0.1
+                - ::1
+                - 10.0.0.0/8
+                - 172.16.0.0/12
+                - 192.168.0.0/16

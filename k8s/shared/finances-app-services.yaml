@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: finances-api-shared
+  namespace: shared
+spec:
+  type: ExternalName
+  externalName: finances-api.finances-app.svc.cluster.local
+  ports:
+  - port: 8000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: finances-ui-shared
+  namespace: shared
+spec:
+  type: ExternalName
+  externalName: finances-ui.finances-app.svc.cluster.local
+  ports:
+  - port: 80

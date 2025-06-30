@@ -1,0 +1,30 @@
+# Secrets and sensitive data 
+*secret*.yaml 
+*password* 
+*.env 
+.env.* 
+ 
+# Development 
+node_modules/ 
+__pycache__/ 
+*.pyc 
+dist/ 
+build/ 
+ 
+# Lock files 
+poetry.lock 
+package-lock.json 
+ 
+# OS files 
+.DS_Store 
+Thumbs.db 
+ 
+# IDE 
+.vscode/ 
+.idea/ 
+*.swp 
+*.swo 
+ 
+# Logs 
+*.log 
+logs/ 

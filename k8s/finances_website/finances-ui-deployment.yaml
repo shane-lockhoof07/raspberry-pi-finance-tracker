@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: finances-ui
+  namespace: finances-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: finances-ui
+  template:
+    metadata:
+      labels:
+        app: finances-ui
+    spec:
+      containers:
+      - name: finances-ui
+        image: localhost:32000/finances-ui:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 80

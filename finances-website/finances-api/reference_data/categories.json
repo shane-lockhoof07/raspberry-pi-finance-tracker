@@ -1,0 +1,18 @@
+{
+    "dining out": 1,
+    "groceries": 2,
+    "gas": 3,
+    "date night": 4,
+    "amazon": 5,
+    "pets": 6,
+    "medical": 7,
+    "shopping": 8,
+    "personal": 9,
+    "travel": 10,
+    "housing": 11,
+    "sports": 12,
+    "automotive": 13,
+    "payments": 14,
+    "work": 15,
+    "other": 16
+}

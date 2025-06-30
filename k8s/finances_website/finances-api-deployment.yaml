@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: finances-api
+  namespace: finances-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: finances-api
+  template:
+    metadata:
+      labels:
+        app: finances-api
+    spec:
+      containers:
+      - name: finances-api
+        image: localhost:32000/finances-api:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8000
+        env:
+        - name: POSTGRES_USER
+          value: "finances"
+        - name: POSTGRES_PASSWORD
+          value: "postgres-password"
+        - name: POSTGRES_DB
+          value: "finances"
+        - name: DB_USER
+          value: "finances"
+        - name: DB_PASSWORD
+          value: "postgres-password"
+        - name: DB_HOST
+          value: "postgres.postgres-db.svc.cluster.local"
+        - name: TRANSACTION_DATA_PATH
+          value: "/app/transaction_data"
+        volumeMounts:
+        - name: transaction-data
+          mountPath: "/app/transaction_data"
+          readOnly: true
+      volumes:
+      - name: transaction-data
+        hostPath:
+          path: /home/shane/data/transaction_data

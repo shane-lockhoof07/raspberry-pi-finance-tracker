@@ -1,0 +1,223 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: transaction-processor-script
+  namespace: shared
+data:
+  transaction-processor.py: |
+    #!/usr/bin/env python3
+    import os
+    import shutil
+    import hashlib
+    import json
+    import time
+    import logging
+    from datetime import datetime
+    from watchdog.observers import Observer
+    from watchdog.events import FileSystemEventHandler
+
+    # Configure logging
+    logging.basicConfig(level=logging.INFO,
+                       format='%(asctime)s - %(message)s',
+                       datefmt='%Y-%m-%d %H:%M:%S')
+    logger = logging.getLogger()
+
+    # Paths
+    INCOMING_DIR = "/transaction_dropbox/incoming"
+    PROCESSED_DIR = "/transaction_dropbox/processed"
+    ERROR_DIR = "/transaction_dropbox/errors"
+    TARGET_DIR = "/app/transaction_data"
+    HASH_FILE = "/transaction_dropbox/processed_hashes.json"
+
+    # Ensure directories exist
+    os.makedirs(INCOMING_DIR, exist_ok=True)
+    os.makedirs(PROCESSED_DIR, exist_ok=True)
+    os.makedirs(ERROR_DIR, exist_ok=True)
+    os.makedirs(TARGET_DIR, exist_ok=True)
+
+    # Load existing file hashes
+    def load_hashes():
+        if os.path.exists(HASH_FILE):
+            with open(HASH_FILE, 'r') as f:
+                return json.load(f)
+        return {}
+
+    # Save updated file hashes
+    def save_hashes(hashes):
+        with open(HASH_FILE, 'w') as f:
+            json.dump(hashes, f, indent=2)
+
+    # Calculate file hash
+    def get_file_hash(filepath):
+        hasher = hashlib.md5()
+        with open(filepath, 'rb') as f:
+            buf = f.read()
+            hasher.update(buf)
+        return hasher.hexdigest()
+
+    # Map filename to card type
+    def identify_card_type(filename):
+        filename = filename.lower()
+        if "discover" in filename:
+            return "discover"
+        elif "amex" in filename:
+            if "blue" in filename:
+                return "amex_blue"
+            else:
+                return "amex_delta"
+        elif "capone" in filename or "capital" in filename:
+            if "x" in filename:
+                return "capone_venture_x"
+            else:
+                return "capone_venture"
+        elif "citi" in filename:
+            if "custom" in filename:
+                return "citi_custom"
+            else:
+                return "citi_double"
+        elif "wellsfargo" in filename:
+            return "wells_fargo"
+        elif "bilt" in filename:
+            return "bilt"
+        else:
+            return None
+
+    # Process a transaction file
+    def process_file(filepath):
+        try:
+            filename = os.path.basename(filepath)
+            logger.info(f"Processing {filename}")
+            
+            # Identify card type
+            card_type = identify_card_type(filename)
+            if not card_type:
+                logger.error(f"Cannot determine card type for {filename}")
+                shutil.move(filepath, os.path.join(ERROR_DIR, filename))
+                return False
+                
+            # Create standardized filename - use just the card type
+            # This ensures we always use the latest file for each card type
+            new_filename = f"{card_type}.csv"
+            target_path = os.path.join(TARGET_DIR, new_filename)
+            
+            # Check if target file exists - always overwrite with newer file
+            if os.path.exists(target_path):
+                logger.info(f"Existing file found at {target_path} - overwriting with newer version")
+                
+            # Copy the file to the transaction_data directory, overwriting if it exists
+            shutil.copy(filepath, target_path)
+            logger.info(f"Copied {filename} to {target_path}")
+            
+            # Set permissions to ensure readability
+            os.chmod(target_path, 0o644)
+            
+            # Move original to processed folder
+            processed_path = os.path.join(PROCESSED_DIR, filename)
+            shutil.move(filepath, processed_path)
+            
+            # Get file hash and update registry
+            file_hash = get_file_hash(processed_path)
+            hashes = load_hashes()
+            hashes[processed_path] = file_hash
+            save_hashes(hashes)
+            
+            logger.info(f"Successfully processed {filename}")
+            return True
+            
+        except Exception as e:
+            logger.error(f"Error processing {filename}: {str(e)}")
+            # Move to error directory
+            try:
+                if os.path.exists(filepath):
+                    shutil.move(filepath, os.path.join(ERROR_DIR, os.path.basename(filepath)))
+            except Exception as move_error:
+                logger.error(f"Error moving file to error directory: {str(move_error)}")
+            return False
+
+    # File watcher class
+    class TransactionHandler(FileSystemEventHandler):
+        def on_created(self, event):
+            if not event.is_directory:
+                # Small delay to ensure file is completely written
+                time.sleep(1)
+                process_file(event.src_path)
+
+    # Main function to start watching
+    def main():
+        logger.info("Starting transaction file monitoring service")
+        
+        # Process any existing files in the incoming directory
+        for filename in os.listdir(INCOMING_DIR):
+            filepath = os.path.join(INCOMING_DIR, filename)
+            if os.path.isfile(filepath):
+                process_file(filepath)
+                
+        # Set up the observer
+        event_handler = TransactionHandler()
+        observer = Observer()
+        observer.schedule(event_handler, INCOMING_DIR, recursive=False)
+        observer.start()
+        
+        try:
+            while True:
+                time.sleep(1)
+        except KeyboardInterrupt:
+            observer.stop()
+        observer.join()
+
+    if __name__ == "__main__":
+        main()
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: transaction-processor
+  namespace: shared
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: transaction-processor
+  template:
+    metadata:
+      labels:
+        app: transaction-processor
+    spec:
+      nodeSelector:
+        kubernetes.io/hostname: pi
+      containers:
+      - name: transaction-processor
+        image: python:3.10-slim
+        command: ["/bin/bash", "-c"]
+        args:
+        - |
+          pip install watchdog
+          cp /scripts/transaction-processor.py /app/
+          chmod +x /app/transaction-processor.py
+          python /app/transaction-processor.py
+        resources:
+          limits:
+            memory: "256Mi"
+            cpu: "200m"
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+        volumeMounts:
+        - name: transaction-processor-script
+          mountPath: /scripts
+        - name: transaction-dropbox
+          mountPath: /transaction_dropbox
+        - name: transaction-data
+          mountPath: /app/transaction_data
+      volumes:
+      - name: transaction-processor-script
+        configMap:
+          name: transaction-processor-script
+          defaultMode: 0755
+      - name: transaction-dropbox
+        persistentVolumeClaim:
+          claimName: transaction-dropbox-pvc
+      - name: transaction-data
+        persistentVolumeClaim:
+          claimName: transaction-data-pvc

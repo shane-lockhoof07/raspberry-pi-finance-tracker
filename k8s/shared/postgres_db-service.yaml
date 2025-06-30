@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-shared
+  namespace: shared
+spec:
+  type: ExternalName
+  externalName: postgres.postgres-db.svc.cluster.local
+  ports:
+  - port: 5432
